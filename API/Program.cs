@@ -13,6 +13,8 @@ builder.Services.AddDbContext<StoreContext>(opt => {
     opt.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection"));
 });
 
+builder.Services.AddCors();
+
 var app = builder.Build();
 
 
@@ -31,7 +33,10 @@ if (app.Environment.IsDevelopment())
 }
 
 
-
+app.UseCors(opt => {
+    //request header from client to server
+    opt.AllowAnyHeader().AllowAnyMethod().WithOrigins("http://localhost:3000");
+});
 app.UseAuthorization();
 
 //MIDDLEWARE TO MAP CONTROLLERS
@@ -53,7 +58,6 @@ try
 }
 catch (System.Exception ex)
 {
-    
     logger.LogError(ex, "A problem occurred during migration");
 }
 
