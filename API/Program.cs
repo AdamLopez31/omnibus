@@ -1,4 +1,5 @@
 using API.Data;
+using API.Middleware;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -25,6 +26,10 @@ var app = builder.Build();
 //MIDDLEWARE ORDERING IS IMPORTANT
 // Configure the HTTP request pipeline. AS REQUEST COMES INTO API AND GOES OUT AS RESPONSE
 // HTTP request pipeline IS WHAT IS BETWEEN MIDDLEWARE DO SOMETHING WITH REQUEST
+
+//ERROR HANDLING MUST GO TO TOP OF MIDDLEWARE REQUEST PIPELINE
+app.UseMiddleware<ExceptionMiddleware>();
+
 if (app.Environment.IsDevelopment())
 {
     //MAKE SWAGGER AVAILABLE IN DEVELOPMENT MODE
