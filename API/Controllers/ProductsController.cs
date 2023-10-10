@@ -23,7 +23,11 @@ namespace API.Controllers
 
         [HttpGet("{id}")] //api/products/3
         public async Task<ActionResult<Product>> GetProduct(int id) {
-            return await _context.Products.FindAsync(id);
+            var product = await _context.Products.FindAsync(id);
+            //to ensure 404 error not 204 no content error check to see if product is not null
+            if(product == null) return NotFound();
+
+            return product;
         }
     }
 }
