@@ -1,4 +1,6 @@
 import axios, { AxiosError, AxiosResponse } from "axios";
+import { toast } from "react-toastify";
+import { router } from "../router/Routes";
 
 
 axios.defaults.baseURL = 'http://localhost:5000/api/';
@@ -13,6 +15,26 @@ axios.interceptors.response.use(response => {
     return response;
 }, (error: AxiosError) => {
     console.log('caught by interceptor');
+    const  {data,status} = error.response as AxiosResponse;
+    switch (status) {
+        case 400:
+            toast.error(data.title)
+            break;
+        case 401:
+            toast.error(data.title)
+            break;
+        case 404:
+                toast.error(data.title)
+                break;    
+        case 500:
+            //because we are not inside of react component we have to use navigate
+            //passing error data to router state
+            router.navigate('/server-error',{state: {error:data}})
+            break;        
+    
+        default:
+            break;
+    }
     //return error back from axios interceptor interceptors are not able to catch and handle the errors
     return Promise.reject(error.response);
 })
