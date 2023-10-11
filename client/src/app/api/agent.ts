@@ -9,7 +9,7 @@ axios.defaults.baseURL = 'http://localhost:5000/api/';
 
 const responseBody = (response: AxiosResponse) => response.data;
 
-//INTERCEPTORS
+//INTERCEPTORS cd Desktop/omnibus/client
 //intercept request on way out from client/browser or response back from api
 axios.interceptors.response.use(response => {
     return response;
@@ -23,9 +23,9 @@ axios.interceptors.response.use(response => {
         case 401:
             toast.error(data.title)
             break;
-        case 404:
-                toast.error(data.title)
-                break;    
+        // case 404:
+        //         toast.error(data.title)
+        //         break;    
         case 500:
             //because we are not inside of react component we have to use navigate
             //passing error data to router state
