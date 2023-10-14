@@ -3,6 +3,10 @@ import { toast } from "react-toastify";
 import { router } from "../router/Routes";
 
 
+//asynchronous code in javascript use Promise
+//sleep method returning promise using sleep to simulate delay
+const sleep = () => new Promise(resolve => setTimeout(resolve,500));
+
 axios.defaults.baseURL = 'http://localhost:5000/api/';
 
 //helper method to extract data we're interested in from body
@@ -11,7 +15,9 @@ const responseBody = (response: AxiosResponse) => response.data;
 
 //INTERCEPTORS cd Desktop/omnibus/client
 //intercept request on way out from client/browser or response back from api
-axios.interceptors.response.use(response => {
+axios.interceptors.response.use(async response => {
+    //with async await you don't have to use .then() keyword 
+    await sleep();
     return response;
 }, (error: AxiosError) => {
     console.log('caught by interceptor');
@@ -43,8 +49,8 @@ axios.interceptors.response.use(response => {
 
 const requests = {
     get: (url:string) => axios.get(url).then(responseBody),
-    post: (url:string, body: {}) => axios.get(url, body).then(responseBody),
-    put: (url:string, body: {}) => axios.get(url, body).then(responseBody),
+    post: (url:string, body: object) => axios.get(url, body).then(responseBody),
+    put: (url:string, body: object) => axios.get(url, body).then(responseBody),
     delete: (url:string) => axios.get(url).then(responseBody),
 }
 

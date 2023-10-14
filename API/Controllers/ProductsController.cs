@@ -21,6 +21,9 @@ namespace API.Controllers
             return await _context.Products.ToListAsync();
         }
 
+        //FOR DEBUGGING
+        //EXECUTE THIS METHOD WHEN CODE IS ALREADY RUNNING launch.json .net core attach
+        // ATTACH TO ALREADY RUNNING PROCESS .NET Core Launch (web) looK FOR API.exe
         [HttpGet("{id}")] //api/products/3
         public async Task<ActionResult<Product>> GetProduct(int id) {
             var product = await _context.Products.FindAsync(id);
