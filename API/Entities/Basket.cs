@@ -15,6 +15,7 @@ namespace API.Entities
         
 
         //TO PREVENT LIST UNDEFINED SCENARIOS INITIALIZE NEW LIST
+        //ONE TO MAY RELATIONSHIP ONE BASKET HAS MANY ITEMS
         public List<BasketItem> Items { get; set; } = new List<BasketItem>();
 
         public void AddItem(Product product, int quantity) {

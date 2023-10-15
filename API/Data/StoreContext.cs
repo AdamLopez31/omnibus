@@ -11,6 +11,8 @@ namespace API.Data
 
         //REPRESENTS TABLE IN DATABASE
         public DbSet<Product> Products {get;set;}
+
+        //BASKETS WILL INCLUDE BASKET ITEMS
         public DbSet<Basket> Baskets { get; set; }
     }
 }
