@@ -104,7 +104,7 @@ namespace API.Controllers
             //BECAUSE WE'RE IN A CONTROLLER WE HAVE ACCESS TO THE HTTP RESPONSE WE'RE GOING TO SEND BACK
             Response.Cookies.Append("buyerId",buyerId, cookieOptions);
 
-            var basket = new Basket{ BuyerId = buyerId};
+            var basket = new Basket{BuyerId = buyerId};
             //ENTITY FRAMEWORK WILL START TRACKING THIS NEW ENTITY WE'VE CREATED
             _context.Baskets.Add(basket);
 
