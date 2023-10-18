@@ -40,7 +40,8 @@ if (app.Environment.IsDevelopment())
 
 app.UseCors(opt => {
     //request header from client to server
-    opt.AllowAnyHeader().AllowAnyMethod().WithOrigins("http://localhost:3000");
+    //allow credentials allows client to pass cookies backwards and forwards from our api server
+    opt.AllowAnyHeader().AllowAnyMethod().AllowCredentials().WithOrigins("http://localhost:3000");
 });
 app.UseAuthorization();
 

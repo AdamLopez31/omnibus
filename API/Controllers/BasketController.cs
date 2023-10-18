@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using API.Data;
+using API.DTOs;
 using API.Entities;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
@@ -20,8 +21,9 @@ namespace API.Controllers
 
         //3 endpoints
         //1. to fetch individual basket
-        [HttpGet]
-        public async Task<ActionResult<Basket>> GetBasket()
+        //SPECIFIY NAME OF ROUTE GetBasket
+        [HttpGet(Name = "GetBasket")]
+        public async Task<ActionResult<BasketDto>> GetBasket()
         {
             //USE COOKIE TO IDENTIFY BASKET
             //WHEN USER CREATES A BASKET ON SERVER A BUYERID WILL BE RETURNED SENT
@@ -31,14 +33,15 @@ namespace API.Controllers
             var basket = await RetrieveBasket();
 
             if (basket == null) return NotFound();
-
-            return basket;
+            return MapBasketToDto(basket);
         }
+
+        
 
         //2. add item to basket use query string
         [HttpPost] //api/basket?productId=3&quantity=2 ONE OF THE POWERS API CONTROLLER HAS ABLE TO READ QUERY STRING
         //AS LONG AS KEYS IN QUERY STRING MATCHES NAMES IN PARAMETERS IT WILL KNOW THAT'S WHERE WE WANT TO GET THEM FROM
-        public async Task<ActionResult> AddItemToBasket(int productId, int quantity) {
+        public async Task<ActionResult<BasketDto>> AddItemToBasket(int productId, int quantity) {
 
             //get basket or create basket
             //RetrieveBasket method will either retrieve us a basket or it's going to 
@@ -58,7 +61,8 @@ namespace API.Controllers
             //SaveChangesAsync returns integer of how many changes we made in database 
             // > 0 we know something has happened to our database
             var result = await _context.SaveChangesAsync() > 0;
-            if(result) return StatusCode(201);
+            //GetBasket will add location header to response
+            if(result) return CreatedAtRoute("GetBasket",MapBasketToDto(basket));
 
             return BadRequest(new ProblemDetails {Title = "Problem saving product to basket"});
         }
@@ -71,13 +75,18 @@ namespace API.Controllers
         public async Task<ActionResult> RemoveBasketItem(int productId, int quantity) {
 
             //get basket
-
-            
+            var basket = await RetrieveBasket();
+            if(basket == null) return NotFound();
 
             //remove item or reduce quantity
+            basket.RemoveItem(productId,quantity);
 
             //save changes
-            return Ok();
+            var result = await _context.SaveChangesAsync() > 0;
+            if(result) return StatusCode(201);
+
+            return BadRequest(new ProblemDetails {Title = "Problem removing item from basket"});
+
         }
 
         private async Task<Basket> RetrieveBasket()
@@ -109,6 +118,25 @@ namespace API.Controllers
             _context.Baskets.Add(basket);
 
             return basket;
+        }
+
+        private BasketDto MapBasketToDto(Basket basket)
+        {
+            return new BasketDto
+            {
+                Id = basket.Id,
+                BuyerId = basket.BuyerId,
+                Items = basket.Items.Select(item => new BasketItemDto
+                {
+                    ProductId = item.ProductId,
+                    Name = item.Product.Name,
+                    Price = item.Product.Price,
+                    PictureUrl = item.Product.PictureUrl,
+                    Type = item.Product.Type,
+                    Brand = item.Product.Brand,
+                    Quantity = item.Quantity
+                }).ToList()
+            };
         }
 
     }
