@@ -8,6 +8,7 @@ import { router } from "../router/Routes";
 const sleep = () => new Promise(resolve => setTimeout(resolve,500));
 
 axios.defaults.baseURL = 'http://localhost:5000/api/';
+axios.defaults.withCredentials = true;
 
 //helper method to extract data we're interested in from body
 
@@ -45,13 +46,13 @@ axios.interceptors.response.use(async response => {
     return Promise.reject(error.response);
 })
 
-
+//MUY IMPORTANTE ,{ headers: { "Access-Control-Allow-Credentials": "true" } }!!!!!!
 
 const requests = {
-    get: (url:string) => axios.get(url).then(responseBody),
-    post: (url:string, body: object) => axios.get(url, body).then(responseBody),
-    put: (url:string, body: object) => axios.get(url, body).then(responseBody),
-    delete: (url:string) => axios.get(url).then(responseBody),
+    get: (url:string) => axios.get(url,{ headers: { "Access-Control-Allow-Credentials": "true" } }).then(responseBody),
+    post: (url:string, body: object) => axios.post(url, body,{ headers: { "Access-Control-Allow-Credentials": "true" } }).then(responseBody),
+    put: (url:string, body: object) => axios.put(url, body,{ headers: { "Access-Control-Allow-Credentials": "true" } }).then(responseBody),
+    delete: (url:string) => axios.delete(url,{ headers: { "Access-Control-Allow-Credentials": "true" } }).then(responseBody),
 }
 
 const Catalog = {
@@ -67,9 +68,17 @@ const TestErrors = {
     getValidationError: () => requests.get('buggy/validation-error')
 }
 
+//COOKIES WILL BE SENT AUTOMATICALLY
+const Basket = {
+    get: () => requests.get('basket'),
+    addItem: (productId:number,quantity = 1) => requests.post(`basket?productId=${productId}&quantity=${quantity}`,{}),
+    removeItem: (productId:number,quantity = 1) => requests.delete(`basket?productId=${productId}&quantity=${quantity}`),
+}
+
 const agent = {
     Catalog,
-    TestErrors
+    TestErrors,
+    Basket
 }
 
 

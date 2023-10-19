@@ -49,7 +49,7 @@ namespace API.Controllers
             //in database it will return default value for an object: which is null
             var basket = await RetrieveBasket();
             if(basket == null) basket = CreateBasket();
-
+    
             //get product
             var product = await _context.Products.FindAsync(productId);
             if(product == null) return NotFound();
