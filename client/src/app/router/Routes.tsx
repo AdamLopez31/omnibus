@@ -7,6 +7,7 @@ import AboutPage from "../../features/about/AboutPage";
 import { ContactPage } from "@mui/icons-material";
 import ServerError from "../errors/ServerError";
 import NotFound from "../errors/NotFound";
+import BasketPage from "../../features/basket/BasketPage";
 
 export const router = createBrowserRouter([
     {
@@ -20,6 +21,7 @@ export const router = createBrowserRouter([
             {path: 'contact', element: <ContactPage></ContactPage>},
             {path: 'server-error', element: <ServerError></ServerError>},
             {path: 'not-found', element: <NotFound></NotFound>},
+            {path: 'basket', element: <BasketPage></BasketPage>},
             // if they navigate to something that doesn't exist in our application
             {path: '*', element: <Navigate to='/not-found'></Navigate>}
         ]
