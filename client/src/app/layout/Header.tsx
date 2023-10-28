@@ -30,6 +30,9 @@ interface Props {
 }
 
 export default function Header({darkMode,handleThemeChange}: Props) {
+
+    //array.reduce(function(total, currentValue, currentIndex, arr), initialValue)
+    
     const {basket} = useStoreContext();
     const itemCount = basket?.items.reduce((sum,item) => sum + item.quantity, 0)
     return (
