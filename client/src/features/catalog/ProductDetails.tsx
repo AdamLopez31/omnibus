@@ -8,6 +8,7 @@ import LoadingComponent from "../../app/layout/LoadingComponent";
 import { LoadingButton } from "@mui/lab";
 import { useAppDispatch, useAppSelector } from "../../app/store/configureStore";
 import {addBasketItemAsync, removeBasketItemAsync } from "../basket/basketSlice";
+import { fetchProductAsync, productSelectors } from "./catalogSlice";
 
 export default function ProductDetails () {
     //TO USE BROWSER DEBUGGER
@@ -15,9 +16,11 @@ export default function ProductDetails () {
     const {basket, status } = useAppSelector(state => state.basket);
     const dispatch = useAppDispatch();
     
+    
     const {id} = useParams<{id:string}>();
-    const [product,setProduct] = useState<Product | null>(null);
-    const [loading,setLoading] = useState(true);
+    const product = useAppSelector(state => productSelectors.selectById(state, id!));
+    const {status: productStatus } = useAppSelector(state => state.catalog);
+    
     const [quantity,setQuantity] = useState(0);
 
     //find will return undefined if not found
@@ -26,12 +29,10 @@ export default function ProductDetails () {
 
     useEffect(() => {
         if(item) setQuantity(item.quantity);
-        //code to right of && is only executed once we have id
-        id && agent.Catalog.details(parseInt(id))
-        .then(response => setProduct(response))
-        .catch(error => console.log(error))
-        .finally(() => setLoading(false));
-    },[id,item]);
+        //if we don't have the product
+        if(!product) dispatch(fetchProductAsync(parseInt(id!)));
+       
+    },[id,item,dispatch,product]);
 
     function handleInputChange(event : ChangeEvent<HTMLInputElement>) {
         if(parseInt(event.currentTarget.value) >= 0) {
@@ -52,7 +53,7 @@ export default function ProductDetails () {
         }
     }
 
-    if(loading) return <LoadingComponent></LoadingComponent>
+    if(productStatus.includes('pending')) return <LoadingComponent></LoadingComponent>
 
     //IF THERE IS NO PRODUCT
     if(!product) return <NotFound></NotFound>
