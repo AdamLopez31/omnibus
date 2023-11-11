@@ -100,7 +100,7 @@ export default function ProductDetails () {
                         <LoadingButton 
                         //disable update if quantity is zero
                         disabled={item?.quantity === quantity || !item && quantity === 0} 
-                        loading={status.includes('pending' + item?.productId)} onClick={handleUpdateCart} sx={{height:'55px'}} 
+                        loading={status.includes('pending')} onClick={handleUpdateCart} sx={{height:'55px'}} 
                         color="primary" size='large' variant='contained' fullWidth>
                             {item? 'Update Quantity': 'Add to Cart'}
                         </LoadingButton>

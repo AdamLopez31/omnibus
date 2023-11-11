@@ -7,22 +7,28 @@ const productsAdapter = createEntityAdapter<Product>();
 
 export const fetchProductsAsync = createAsyncThunk<Product[]>(
     'catalog/fetchProductsAsync',
-    async () => {
+    //thunkAPI is second parameter so put _ as pseudo first parameter equivalent to void
+    async (_,thunkAPI) => {
         try {
             return await agent.Catalog.list();
-        } catch (error) {
-            console.log(error);
+        } catch (error:any) {
+            return thunkAPI.rejectWithValue({error: error.data})
         }
     }
 )
 
+
+//think of these as an outer function
+//in error handling outer function thinks the request has been fulfilled
 export const fetchProductAsync = createAsyncThunk<Product, number>(
     'catalog/fetchProductAsync',
-    async (productId) => {
+    //inner function
+    async (productId,thunkAPI) => {
         try {
             return await agent.Catalog.details(productId);
-        } catch (error) {
-            console.log(error);
+        } catch (error:any) {
+            //rejectWithValue whole function will be rejected not fulfilled
+            return thunkAPI.rejectWithValue({error: error.data})
         }
     }
 )
@@ -49,7 +55,8 @@ export const catalogSlice = createSlice({
             state.productsLoaded = true;
         });
 
-        builder.addCase(fetchProductsAsync.rejected, (state) => {
+        builder.addCase(fetchProductsAsync.rejected, (state,action) => {
+            console.log(action.payload)
             state.status = 'idle';
         });
 
@@ -61,8 +68,8 @@ export const catalogSlice = createSlice({
             productsAdapter.upsertOne(state,action.payload);
             state.status = 'idle';
         });
-        builder.addCase(fetchProductAsync.rejected, (state) => {
-           
+        builder.addCase(fetchProductAsync.rejected, (state,action) => {
+            console.log(action);
             state.status = 'idle';
         });
     })
