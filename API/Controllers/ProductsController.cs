@@ -1,5 +1,6 @@
 using API.Data;
 using API.Entities;
+using API.Extensions;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -17,8 +18,16 @@ namespace API.Controllers
 
         //END POINT RETURN TASK FOR ASYNCHRONOUS QUERYING
         [HttpGet]
-        public async Task<ActionResult<List<Product>>> GetProducts() {
-            return await _context.Products.ToListAsync();
+        public async Task<ActionResult<List<Product>>> GetProducts(string orderBy, string searchTerm, string brands, string types) {
+            
+            //NOT EXECUTING ANYTHING AGAINST THE DATABASE AT THIS POINT
+            var query = _context.Products.Sort(orderBy).Search(searchTerm).Filter(brands,types)
+            .AsQueryable();
+
+            
+
+            return await query.ToListAsync();
+            //return await _context.Products.ToListAsync(); instead of executing this right away
         }
 
         //FOR DEBUGGING
