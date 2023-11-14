@@ -30,7 +30,7 @@ namespace API.Controllers
             //return await _context.Products.ToListAsync(); instead of executing this right away
         }
 
-        //FOR DEBUGGING
+        //FOR DEBUGGING EXAMPLE
         //EXECUTE THIS METHOD WHEN CODE IS ALREADY RUNNING launch.json .net core attach
         // ATTACH TO ALREADY RUNNING PROCESS .NET Core Launch (web) looK FOR API.exe
         [HttpGet("{id}")] //api/products/3
