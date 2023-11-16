@@ -1,6 +1,8 @@
+using System.Text.Json;
 using API.Data;
 using API.Entities;
 using API.Extensions;
+using API.RequestHelpers;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -17,16 +19,30 @@ namespace API.Controllers
         }
 
         //END POINT RETURN TASK FOR ASYNCHRONOUS QUERYING
+        //CHANGED PARAMETERS FROM STRINGS TO OBJECT API ASSUMES STRINGS IN PARAMETER ARE PASSED AS QUERY STRINGS
+        //IF WERE PASSING AN OBJECT AS PARAMETERS IT WILL PRESUME IT'S GOING TO GET THESE VALUES FROM 
+        //THE BODY OF OUR REQUEST IF WE WANT TO USE AN OBJECT AS OUR PARAMETER WE NEED TO TELL OUR API CONTROLLER WHERE
+        //TO LOOK TO GO AND GET PARAMETERS add attribute [FromQuery]
         [HttpGet]
-        public async Task<ActionResult<List<Product>>> GetProducts(string orderBy, string searchTerm, string brands, string types) {
+        public async Task<ActionResult<PagedList<Product>>> GetProducts([FromQuery]ProductParams productParams) {
             
             //NOT EXECUTING ANYTHING AGAINST THE DATABASE AT THIS POINT
-            var query = _context.Products.Sort(orderBy).Search(searchTerm).Filter(brands,types)
+            var query = 
+            _context.Products.Sort(productParams.OrderBy)
+            .Search(productParams.SearchTerm)
+            .Filter(productParams.Brand,productParams.Types)
             .AsQueryable();
 
             
+            var products = await PagedList<Product>.ToPagedList(query,productParams.PageNumber,productParams.PageSize);
 
-            return await query.ToListAsync();
+            //RETURN IN RESPONSE HEADERS AND GET ACCESS TO OUR PAGINATION FROM OUR RESPONSE HEADERS
+            //product metadata object serialized into json RETURN AS PAGINATION HEADER
+            Response.AddPaginationHeader(products.MetaData);
+
+
+            return products;
+            //return await query.ToListAsync();
             //return await _context.Products.ToListAsync(); instead of executing this right away
         }
 
