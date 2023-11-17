@@ -57,5 +57,20 @@ namespace API.Controllers
 
             return product;
         }
+
+        //ROUTE PARAMETER filters
+        [HttpGet("filters")]
+
+        public async Task<IActionResult> GetFilters() {
+            //USING IACTIONRESULT WE HAVE ACCESS TO ALL THE HTTP RESPONSES LIKE NotFound() ETC
+            //JUST DONT GET TYPE SAFETY WITH OUR RESPONSE
+            //SELECT ALLOWS US TO PROJECT INTO SOMETHING OTHER THAN OUR PRODUCTS
+            //DISTINCT ONLY WANT THE UNIQUE VALUES OF EACH BRAND INSIDE OUR DATABASE
+            var brands = await _context.Products.Select(p => p.Brand).Distinct().ToListAsync();
+            var types = await _context.Products.Select(p => p.Type).Distinct().ToListAsync();
+
+            //ANONYMOUS OBJECT WITH TWO LISTS
+            return Ok(new {brands,types});
+        }
     }
 }
