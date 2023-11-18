@@ -2,7 +2,7 @@ import LoadingComponent from "../../app/layout/LoadingComponent";
 import { useAppDispatch, useAppSelector } from "../../app/store/configureStore";
 import ProductList from "./ProductList";
 import { useEffect } from "react";
-import { fetchProductsAsync, productSelectors } from "./catalogSlice";
+import { fetchProductsAsync, productSelectors,fetchFilters } from "./catalogSlice";
 
 
 
@@ -14,7 +14,7 @@ export default function Catalog() {
 
     //const [loading,setLoading] = useState(true);
     const products = useAppSelector(productSelectors.selectAll);
-    const {productsLoaded,status} = useAppSelector(state => state.catalog);
+    const {productsLoaded,status,filtersLoaded} = useAppSelector(state => state.catalog);
     const dispatch = useAppDispatch();
     
     useEffect(() => {
@@ -27,9 +27,11 @@ export default function Catalog() {
       //we don't lose our redux state when we stay within our app
       //when we load different component using local state that state is destroyed
       if(!productsLoaded) dispatch(fetchProductsAsync());
-
-
     },[productsLoaded,dispatch]);
+
+    useEffect(() => {
+      if(!filtersLoaded) dispatch(fetchFilters());
+    },[dispatch,filtersLoaded])
 
     if(status.includes('pending')) return <LoadingComponent message="Loading products"></LoadingComponent>
     return (

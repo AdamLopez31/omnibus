@@ -8,6 +8,7 @@ const productsAdapter = createEntityAdapter<Product>();
 export const fetchProductsAsync = createAsyncThunk<Product[]>(
     'catalog/fetchProductsAsync',
     //thunkAPI is second parameter so put _ as pseudo first parameter equivalent to void
+    //thunkAPI to catch any errors 
     async (_,thunkAPI) => {
         try {
             return await agent.Catalog.list();
@@ -33,12 +34,27 @@ export const fetchProductAsync = createAsyncThunk<Product, number>(
     }
 )
 
+//ASYNC THUNK TO GO OUT AND GET THE FILTERS
+export const fetchFilters = createAsyncThunk(
+    'catalog/fetchFiltersAsync',
+    async (_,thunkAPI) => {
+        try {
+            return agent.Catalog.fetchFilters();
+        } catch (error:any) {
+            return thunkAPI.rejectWithValue({error: error.data})
+        }
+    }
+)
+
 export const catalogSlice = createSlice({
     name: 'catalog',
     //WE GET FROM PRODUCTS ADAPTER
     initialState: productsAdapter.getInitialState({
         productsLoaded: false,
-        status: 'idle'
+        filtersLoaded: false,
+        status: 'idle',
+        brands: [],
+        types: [],
     }),
     reducers: {
 
@@ -70,6 +86,20 @@ export const catalogSlice = createSlice({
         });
         builder.addCase(fetchProductAsync.rejected, (state,action) => {
             console.log(action);
+            state.status = 'idle';
+        });
+        builder.addCase(fetchFilters.pending, (state) => {
+            state.status = 'pendingFetchFilters';
+        });
+        //action were going to get the result of our async method in the payload
+        builder.addCase(fetchFilters.fulfilled, (state,action) => {
+            state.brands = action.payload.brands;
+            state.types = action.payload.types;
+            state.status = 'idle';
+            state.filtersLoaded = true;
+        });
+        builder.addCase(fetchFilters.rejected, (state,action) => {
+            console.log(action.payload);
             state.status = 'idle';
         });
     })
