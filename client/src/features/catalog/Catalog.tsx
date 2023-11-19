@@ -5,13 +5,6 @@ import { useEffect } from "react";
 import { fetchProductsAsync, productSelectors,fetchFilters } from "./catalogSlice";
 import { Box, Checkbox, FormControl, FormControlLabel, FormGroup, FormLabel, Grid, Pagination, Paper, Radio, RadioGroup, TextField, Typography } from "@mui/material";
 
-
-
-
-
-
-
-
 const sortOptions = [
   {value: 'name', label: 'Alphabetical'},
   {value: 'priceDesc', label: 'Price - High to low'},
