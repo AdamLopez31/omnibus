@@ -15,13 +15,33 @@ interface CatalogState {
 
 const productsAdapter = createEntityAdapter<Product>();
 
-export const fetchProductsAsync = createAsyncThunk<Product[]>(
+
+
+function getAxiosParams(productParams: ProductParams) {
+    const params = new URLSearchParams();
+    params.append('pageNumber',productParams.pageNumber.toString());
+    params.append('pageSize',productParams.pageSize.toString());
+    params.append('orderBy',productParams.orderBy.toString());
+
+    //OPTIONAL PARAMETERS
+    if(productParams.searchTerm) params.append('searchTerm',productParams.searchTerm.toString());
+    if(productParams.brands) params.append('brands',productParams.brands.toString());
+    if(productParams.types) params.append('types',productParams.types.toString());
+
+    return params;
+}
+
+                                            //createAsyncThunk<Product[],void>
+                                            //NOT PASSING ANY ARGUMENTS TO ASYNC METHOD SO SECOND PARAMETER IS VOID
+                                            //THIRD PARAMETER IS TYPE OF STATE WER'E USING
+export const fetchProductsAsync = createAsyncThunk<Product[],void,{state:RootState}>(
     'catalog/fetchProductsAsync',
     //thunkAPI is second parameter so put _ as pseudo first parameter equivalent to void
     //thunkAPI to catch any errors 
     async (_,thunkAPI) => {
+        const params = getAxiosParams(thunkAPI.getState().catalog.productParams);
         try {
-            return await agent.Catalog.list();
+            return await agent.Catalog.list(params);
         } catch (error:any) {
             return thunkAPI.rejectWithValue({error: error.data})
         }
@@ -134,4 +154,4 @@ export const catalogSlice = createSlice({
 
 export const productSelectors = productsAdapter.getSelectors((state: RootState) => state.catalog);
 
-export const {setProductParams,resetProductParams} = catalogSlice.actions;
+export const {setProductParams,resetProductParams} = catalogSlice.actions;  
