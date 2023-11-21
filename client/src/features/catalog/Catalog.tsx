@@ -2,8 +2,10 @@ import LoadingComponent from "../../app/layout/LoadingComponent";
 import { useAppDispatch, useAppSelector } from "../../app/store/configureStore";
 import ProductList from "./ProductList";
 import { useEffect } from "react";
-import { fetchProductsAsync, productSelectors,fetchFilters } from "./catalogSlice";
-import { Box, Checkbox, FormControl, FormControlLabel, FormGroup, Grid, Pagination, Paper, Radio, RadioGroup, TextField, Typography } from "@mui/material";
+import { fetchProductsAsync, productSelectors,fetchFilters, setProductParams } from "./catalogSlice";
+import { Box, Checkbox, FormControl, FormControlLabel, FormGroup, Grid, Pagination, Paper,Typography } from "@mui/material";
+import ProductSearch from "./ProductSearch";
+import RadioButtonGroup from "../../app/components/RadioButtonGroup";
 
 const sortOptions = [
   {value: 'name', label: 'Alphabetical'},
@@ -19,7 +21,7 @@ export default function Catalog() {
 
     //const [loading,setLoading] = useState(true);
     const products = useAppSelector(productSelectors.selectAll);
-    const {productsLoaded,status,filtersLoaded, brands, types} = useAppSelector(state => state.catalog);
+    const {productsLoaded,status,filtersLoaded, brands, types, productParams} = useAppSelector(state => state.catalog);
     const dispatch = useAppDispatch();
     
     useEffect(() => {
@@ -43,16 +45,14 @@ export default function Catalog() {
       <Grid container spacing={4}>
         <Grid item xs={3}>
           <Paper sx={{mb: 2}}>
-            <TextField label='Search products' variant="outlined" fullWidth></TextField>
+            <ProductSearch></ProductSearch>
           </Paper>
           <Paper sx={{mb: 2, p: 2}}>
-            <FormControl>
-              <RadioGroup>
-                {sortOptions.map(({value,label}) => (
-                  <FormControlLabel value={value} control={<Radio />} label={label} key={value} />
-                ))}
-              </RadioGroup>
-            </FormControl>
+            {/* MAKE RadioButtonGroup SELF CLOSING TO AVOID TYPESCRICT ERROR !!!!!! */}
+            <RadioButtonGroup 
+            selectedValue={productParams.orderBy} 
+            options={sortOptions} 
+            onChange={(e) => dispatch(setProductParams({orderBy: e.target.value}))}/>
           </Paper>
           <Paper sx={{mb: 2, p: 2}}>
             <FormGroup>

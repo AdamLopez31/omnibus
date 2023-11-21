@@ -31,6 +31,8 @@ function getAxiosParams(productParams: ProductParams) {
     return params;
 }
 
+//REQUESTS TO API fetchProductsAsync fetchProductAsync !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
                                             //createAsyncThunk<Product[],void>
                                             //NOT PASSING ANY ARGUMENTS TO ASYNC METHOD SO SECOND PARAMETER IS VOID
                                             //THIRD PARAMETER IS TYPE OF STATE WER'E USING
@@ -99,6 +101,8 @@ export const catalogSlice = createSlice({
     reducers: {
         setProductParams: (state,action) => {
             state.productsLoaded = false;
+            //WHEN WE SET OUR PRODUCT PARAMS WERE GOING TO PASS OUR ACTION PAYLOAD
+            // SEARCH TERM AND OVERWRITE ...state.productParams
             state.productParams = {...state.productParams, ...action.payload}
         },
         resetProductParams: (state) => {
