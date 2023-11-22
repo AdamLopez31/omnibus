@@ -17,3 +17,5 @@ export interface ProductParams {
     pageNumber: number;
     pageSize: number;
 }
+
+//http://localhost:5000/api/products?pageNumber=1&pageSize=6&orderBy=name&types=Boards

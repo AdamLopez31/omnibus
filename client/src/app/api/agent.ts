@@ -49,7 +49,7 @@ axios.interceptors.response.use(async response => {
 //MUY IMPORTANTE ,{ headers: { "Access-Control-Allow-Credentials": "true" } }!!!!!!
 
 const requests = {
-    get: (url:string, params?: URLSearchParams) => axios.get(url,{ headers: { "Access-Control-Allow-Credentials": "true" },params }).then(responseBody),
+    get: (url:string, params?: URLSearchParams) => axios.get(url,{ headers: { "Access-Control-Allow-Credentials": "true" },params}).then(responseBody),
     post: (url:string, body: object) => axios.post(url, body,{ headers: { "Access-Control-Allow-Credentials": "true" } }).then(responseBody),
     put: (url:string, body: object) => axios.put(url, body,{ headers: { "Access-Control-Allow-Credentials": "true" } }).then(responseBody),
     delete: (url:string) => axios.delete(url,{ headers: { "Access-Control-Allow-Credentials": "true" } }).then(responseBody),
@@ -60,7 +60,6 @@ const Catalog = {
     // list: () => requests.get('buggy/server-error'),
     details: (id: number) => requests.get(`products/${id}`),
     fetchFilters: () => requests.get('products/filters')
-
 }
 
 const TestErrors = {

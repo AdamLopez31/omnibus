@@ -15,7 +15,7 @@ namespace API.RequestHelpers
 
         public string Types { get; set; }
 
-        public string Brand { get; set; }
+        public string Brands { get; set; }
 
     }
 }

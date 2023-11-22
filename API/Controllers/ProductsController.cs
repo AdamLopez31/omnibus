@@ -30,7 +30,7 @@ namespace API.Controllers
             var query = 
             _context.Products.Sort(productParams.OrderBy)
             .Search(productParams.SearchTerm)
-            .Filter(productParams.Brand,productParams.Types)
+            .Filter(productParams.Brands,productParams.Types)
             .AsQueryable();
 
             
@@ -70,7 +70,7 @@ namespace API.Controllers
             var types = await _context.Products.Select(p => p.Type).Distinct().ToListAsync();
 
             //ANONYMOUS OBJECT WITH TWO LISTS
-            return Ok(new {brands,types});
+            return Ok(new {brands,types});  
         }
     }
 }
