@@ -1,6 +1,8 @@
 import axios, { AxiosError, AxiosResponse } from "axios";
 import { toast } from "react-toastify";
 import { router } from "../router/Routes";
+import { PaginatedResponse } from "../models/pagination";
+
 
 
 //asynchronous code in javascript use Promise
@@ -19,6 +21,13 @@ const responseBody = (response: AxiosResponse) => response.data;
 axios.interceptors.response.use(async response => {
     //with async await you don't have to use .then() keyword 
     await sleep();
+    //axios only works with lowercase properties
+    const pagination = response.headers['pagination'];
+    if(pagination) {
+        //override what's in response data will contain items and metadata
+        response.data = new PaginatedResponse(response.data, JSON.parse(pagination));
+        return response;
+    }
     return response;
 }, (error: AxiosError) => {
     console.log('caught by interceptor');
