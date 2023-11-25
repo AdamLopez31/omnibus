@@ -23,7 +23,7 @@ export default function Catalog() {
 
     //const [loading,setLoading] = useState(true);
     const products = useAppSelector(productSelectors.selectAll);
-    const {productsLoaded,status,filtersLoaded, brands, types, productParams, metaData} = useAppSelector(state => state.catalog);
+    const {productsLoaded,filtersLoaded, brands, types, productParams, metaData} = useAppSelector(state => state.catalog);
     const dispatch = useAppDispatch();
     
     useEffect(() => {
