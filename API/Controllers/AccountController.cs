@@ -4,6 +4,8 @@ using System.Linq;
 using System.Threading.Tasks;
 using API.DTOs;
 using API.Entities;
+using API.Services;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 
@@ -13,25 +15,31 @@ namespace API.Controllers
     {
 
         private readonly UserManager<User> _userManager;
-        public AccountController(UserManager<User> userManager)
+
+        private readonly TokenService _tokenService;
+        public AccountController(UserManager<User> userManager, TokenService tokenService)
         {
             //allow us to login and register users into our application
             _userManager = userManager;
+            _tokenService = tokenService;
         }
 
         [HttpPost("login")]
-        public async Task<ActionResult<User>> Login(LoginDto loginDto) {
+        public async Task<ActionResult<UserDto>> Login(LoginDto loginDto) {
             var user = await _userManager.FindByNameAsync(loginDto.Username);
             if(user == null || !await _userManager.CheckPasswordAsync(user, loginDto.Password)) 
             return Unauthorized();
 
-            return user;
+            return new UserDto
+            {
+                Email = user.Email,
+                Token = await _tokenService.GenerateToken(user)
+            };
         }
 
 
 
         //NOT GOING TO RETURN USER FROM METHOD AFTER REGISTER ASK THEM TO LOG IN
-
          [HttpPost("register")]
         public async Task<ActionResult> Register(RegisterDto registerDto) {
             var user = new User {UserName = registerDto.Username, Email = registerDto.Email};
@@ -52,6 +60,21 @@ namespace API.Controllers
 
             //successfully created but won't give information to get the user from
             return StatusCode(201);
+        }
+
+
+        //TO PROTECT ENDPOINT
+        [Authorize]
+        [HttpGet("currentUser")]
+        public async Task<ActionResult<UserDto>> GetCurrentUser() {
+            //WILL GET NAME CLAIM FROM TOKEN USING User.Identity.Name
+            var user = await _userManager.FindByNameAsync(User.Identity.Name);
+
+            return new UserDto {
+                Email = user.Email,
+                Token = await _tokenService.GenerateToken(user)
+            };
+
         }
     }
 }
