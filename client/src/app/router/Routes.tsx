@@ -10,6 +10,8 @@ import NotFound from "../errors/NotFound";
 import BasketPage from "../../features/basket/BasketPage";
 import CheckoutPage from "../../features/checkout/CheckoutPage";
 import ContactPage from "../../features/contact/ContactPage";
+import Register from "../../features/account/Register";
+import Login from "../../features/account/Login";
 
 export const router = createBrowserRouter([
     {
@@ -25,6 +27,8 @@ export const router = createBrowserRouter([
             {path: 'not-found', element: <NotFound></NotFound>},
             {path: 'basket', element: <BasketPage></BasketPage>},
             {path: 'checkout', element: <CheckoutPage></CheckoutPage>},
+            {path: 'login', element: <Login></Login>},
+            {path: 'register', element: <Register></Register>},
             // if they navigate to something that doesn't exist in our application
             {path: '*', element: <Navigate to='/not-found'></Navigate>}
         ]
