@@ -1,5 +1,7 @@
 using API.Data;
+using API.Entities;
 using API.Middleware;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -15,6 +17,18 @@ builder.Services.AddDbContext<StoreContext>(opt => {
 });
 
 builder.Services.AddCors();
+
+//CONFIGURATION FOR IDENTITY
+builder.Services.AddIdentityCore<User>(opt => {
+    //prevent duplicate emails in database
+    opt.User.RequireUniqueEmail = true;
+})
+.AddRoles<IdentityRole>()
+.AddEntityFrameworkStores<StoreContext>();//GIVES US TABLES FOR USERS AND ROLES
+
+//SERVICES FOR AUTHENTICATION AND AUTHORIZATION
+builder.Services.AddAuthentication();
+builder.Services.AddAuthorization();
 
 var app = builder.Build();
 
@@ -50,6 +64,7 @@ app.MapControllers();
 
 var scope = app.Services.CreateScope();
 var context = scope.ServiceProvider.GetRequiredService<StoreContext>();
+var userManager = scope.ServiceProvider.GetRequiredService<UserManager<User>>();
 
 //FOR ERRORS
 var logger = scope.ServiceProvider.GetRequiredService<ILogger<Program>>();
@@ -57,10 +72,10 @@ try
 {
     //IF DATABASE ALREADY EXIST THIS CODE DOESN'T DO ANYTHING
     //CREATES DATABASE AND APPLIES ANY PENDING MIGRATIONS
-    context.Database.Migrate();
+    await context.Database.MigrateAsync();
 
     //DBINITIALIZER IS STATIC SO NO NEED TO CREATE INSTANCE OF CLASS
-    DbInitializer.Initialize(context);
+    await DbInitializer.Initialize(context,userManager);
 }
 catch (System.Exception ex)
 {
