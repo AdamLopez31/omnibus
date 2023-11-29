@@ -11,24 +11,26 @@ import { Paper } from '@mui/material';
 import { Link } from 'react-router-dom';
 import { useState } from 'react';
 import agent from '../../app/api/agent';
+import { FieldValues, useForm } from 'react-hook-form';
+import { LoadingButton } from '@mui/lab';
 
 export default function Login() {
-  const [values,setValues] = useState({
-    username: '',
-    password: ''
+  const {register,handleSubmit, formState: {isSubmitting,errors,isValid}} = useForm({
+    mode:'onTouched'
   });
-  const handleSubmit = (event:any) => {
-    event.preventDefault();
-    //controlled form handle change event in input
-   agent.Account.login(values);
-  };
 
-  function handleInputChange(event: any) {
-    //name something we can set ourself in input
-    //value whatever is typed in
-    const {name,value} = event.target;
-    setValues({...values, [name]:value})
+  //FieldValues what we get back from react hook form
+  async function submitForm(data: FieldValues) {
+    try {
+      await agent.Account.login(data);
+    } catch (error) {
+      console.log(error);
+    }
+    
+
   }
+  
+ 
 
   return (
       <Container component={Paper} maxWidth="sm" sx={{display:'flex', flexDirection:'column', alignItems:'center', p: 4}}>
@@ -38,33 +40,39 @@ export default function Login() {
           <Typography component="h1" variant="h5">
             Sign in
           </Typography>
-          <Box component="form" onSubmit={handleSubmit} noValidate sx={{ mt: 1 }}>
+          <Box component="form" onSubmit={handleSubmit(submitForm)} noValidate sx={{ mt: 1 }}>
             <TextField
               margin="normal"
               fullWidth
               label="Username"
-              name="username"
               autoFocus
-              onChange={handleInputChange}
-              value={values.username}
+              //replaces  onChange={handleInputChange}
+              {...register('username', {required:'Username is required'})}
+              //!! casts username into a boolean if it exists in error object will be true
+              //will give input a red color
+              error={!!errors.username}
+              helperText={errors?.username?.message as string}
             />
             <TextField
               margin="normal"
               fullWidth
-              name="password"
               label="Password"
               type="password"
-              onChange={handleInputChange}
-              value={values.password}
+              {...register('password', {required:'Password is required'})}
+              error={!!errors.password}
+              helperText={errors?.password?.message as string}
+              
             />
-            <Button
+            <LoadingButton
+              loading={isSubmitting}
+              disabled={!isValid}
               type="submit"
               fullWidth
               variant="contained"
               sx={{ mt: 3, mb: 2 }}
             >
               Sign In
-            </Button>
+            </LoadingButton>
             <Grid container>
               <Grid item>
                 <Link to='/register'>
