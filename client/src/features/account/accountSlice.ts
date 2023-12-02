@@ -3,6 +3,7 @@ import { User } from "../../app/models/user";
 import { FieldValues } from "react-hook-form";
 import agent from "../../app/api/agent";
 import { router } from "../../app/router/Routes";
+import { toast } from "react-toastify";
 
 interface AccountState {
     user: User | null;
@@ -35,15 +36,24 @@ export const signInUser = createAsyncThunk<User,FieldValues>(
 //FETCHING CURRENTLY LOGGED IN USER
 export const fetchCurrentUser = createAsyncThunk<User>(
     //type prefix
-    'account/fetchUser',
+    'account/fetchCurrentUser',
     async (_, thunkAPI) => {
+        thunkAPI.dispatch(setUser(JSON.parse(localStorage.getItem('user')!)));
         try {
             const user = await agent.Account.currentUser();
             localStorage.setItem('user',JSON.stringify(user));
             return user;
         } catch (error:any) {
+            //if request fails
             return thunkAPI.rejectWithValue({error:error.data});
         }
+    },
+    {
+        condition: () => {
+            //if we don't have a token inside will not make network request if we don't have user
+            if(!localStorage.getItem('user')) return false;
+        }
+        
     }
 );
 
@@ -56,11 +66,21 @@ export const accountSlice = createSlice({
             localStorage.removeItem('user');
             //send back to homepage
             router.navigate('/');
+        },
+        setUser: (state,action) => {
+            state.user = action.payload;
         }
     },
     //use addMatcher because our 2 createAsyncThunk are both returning user and we 
     //want to set our user in them
     extraReducers: (builder => {
+        builder.addCase(fetchCurrentUser.rejected, (state => {
+            //log user out if not authorized
+            state.user = null;
+            localStorage.removeItem('user');
+            toast.error('Session expired - please login again');
+            router.navigate('/');
+        }));
         builder.addMatcher(isAnyOf(signInUser.fulfilled, fetchCurrentUser.fulfilled), (state,action) => {
             state.user = action.payload;
         });
@@ -70,4 +90,4 @@ export const accountSlice = createSlice({
     })
 })
 
-export const {signOut} = accountSlice.actions;
+export const {signOut,setUser} = accountSlice.actions;

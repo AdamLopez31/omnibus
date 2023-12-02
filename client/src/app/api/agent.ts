@@ -2,6 +2,7 @@ import axios, { AxiosError, AxiosResponse } from "axios";
 import { toast } from "react-toastify";
 import { router } from "../router/Routes";
 import { PaginatedResponse } from "../models/pagination";
+import { store } from "../store/configureStore";
 
 
 
@@ -16,8 +17,18 @@ axios.defaults.withCredentials = true;
 
 const responseBody = (response: AxiosResponse) => response.data;
 
-//INTERCEPTORS cd Desktop/omnibus/client
+//INTERCEPTORS 
 //intercept request on way out from client/browser or response back from api
+
+axios.interceptors.request.use(config => {
+    //ATTACH TOKEN AS AUTHORIZATION HEADER TO OUR REQUEST
+    const token = store.getState().account.user?.token;
+    if(token) config.headers.Authorization = `Bearer ${token}`;
+    return config;
+})
+
+
+
 axios.interceptors.response.use(async response => {
     //with async await you don't have to use .then() keyword 
     await sleep();
