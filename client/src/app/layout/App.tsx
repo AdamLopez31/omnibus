@@ -1,15 +1,12 @@
 import { Container, CssBaseline, ThemeProvider,createTheme } from "@mui/material";
 import Header from "./Header";
-import { useContext, useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { Outlet } from "react-router-dom";
 import { ToastContainer } from "react-toastify";
 import 'react-toastify/dist/ReactToastify.css';
-import { useStoreContext } from "../context/StoreContext";
-import { getCookie } from "../util/util";
-import agent from "../api/agent";
 import LoadingComponent from "./LoadingComponent";
 import { useAppDispatch } from "../store/configureStore";
-import { setBasket } from "../../features/basket/basketSlice";
+import { fetchBasketAsync } from "../../features/basket/basketSlice";
 import { fetchCurrentUser } from "../../features/account/accountSlice";
 
 function App() {
@@ -20,21 +17,24 @@ function App() {
   const dispatch = useAppDispatch();
   const [loading,setLoading] = useState(true);
 
+
+  //TO AVOID INFINITE RERENDERING IN USEEFFECT USE REACT CALLBACK FUNCTION
+  //WILL MEMOIZE THIS FUNCTION AND MAKE SURE IT DOES NOT CHANGE ON ANY RERENDER
+  const initApp = useCallback(async () => {
+      try {
+        await dispatch(fetchCurrentUser());
+        await dispatch(fetchBasketAsync());
+  
+      } catch (error:any) {
+        console.log(error);
+      }
+    },[dispatch]
+  )
+  
+
   useEffect(() => {
-    const buyerId = getCookie('buyerId');
-    dispatch(fetchCurrentUser());
-    if(buyerId) {
-      agent.Basket.get()
-      .then(basket => dispatch(setBasket(basket)))
-      .catch(error => console.log(error))
-      .finally(() => setLoading(false));
-    }
-
-    else {
-      setLoading(false);
-    }
-
-  },[dispatch])
+    initApp().then(() => setLoading(false));
+  },[initApp])
 
   const [darkMode,setDarkMode] = useState(false);
   const paletteType = darkMode ? 'dark': 'light';
