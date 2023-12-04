@@ -44,12 +44,12 @@ axios.interceptors.response.use(async response => {
     console.log('caught by interceptor');
     const  {data,status} = error.response as AxiosResponse;
     switch (status) {
-        case 400:
-            toast.error(data.title)
-            break;
-        case 401:
-            toast.error(data.title)
-            break;
+        // case 400:
+        //     toast.error(data.title)
+        //     break;
+        // case 401:
+        //     toast.error(data.title)
+        //     break;
         // case 404:
         //         toast.error(data.title)
         //         break;    
