@@ -13,20 +13,65 @@ import { LoadingButton } from '@mui/lab';
 import { useAppDispatch } from '../../app/store/configureStore';
 import agent from '../../app/api/agent';
 import { useEffect, useState } from 'react';
+import { toast } from 'react-toastify';
 
 
 export default function Register() {
-  const [validationErrors, setValidationErrors] = useState([]);  
-  const {register,handleSubmit, formState: {isSubmitting,errors,isValid}} = useForm({
+  const navigate = useNavigate();
+  const {register,handleSubmit, setError, formState: {isSubmitting,errors,isValid}} = useForm({
     mode:'onTouched'
   });
 
+  function handleApiErrors(errors:any) {
+    let errorsArray = extractApiErrors(errors.data.errors)
+    console.log(errorsArray);
+    if(errorsArray) {
+      errorsArray.forEach((error:string) => {
+        if(error.includes('Password')) {
+          setError('password', {message:error})
+        }
+        else if(error.includes('Email')) {
+          setError('email', {message:error})
+        }
+        else if(error.includes('Username')) {
+          setError('username', {message:error})
+        }
+      })
+    }
+  }
 
-  useEffect(() => {
-   
-  }, [validationErrors])
+  function extractApiErrors(errors:any) {
+    let errorValues = Object.values(errors);
+    let errorLength;
+    let errorDescriptionArray = [];
+    errorLength = errorValues.length;
+    for (let index = 0; index < errorValues.length; index++) {
+      if(index === 0) {
+        let extractor1Staging:any = errorValues[index];
+        let extractor1 = extractor1Staging[0];
+        errorDescriptionArray.push(extractor1);
+      }
+      else if(index === 1) {
+        let extractor2Staging:any = errorValues[index];
+        let extractor2 = extractor2Staging[0];
+        errorDescriptionArray.push(extractor2);
+      }
+
+      else if(index === 2) {
+        let extractor3Staging:any = errorValues[index];
+        let extractor3 = extractor3Staging[0];
+        errorDescriptionArray.push(extractor3);
+      }
+
+      else if(index === 3) {
+        let extractor4Staging:any = errorValues[index];
+        let extractor4= extractor4Staging[0];
+        errorDescriptionArray.push(extractor4);
+      }
+    }
+    return errorDescriptionArray;
+  }
   
-
   return (
       <Container component={Paper} maxWidth="sm" sx={{display:'flex', flexDirection:'column', alignItems:'center', p: 4}}>
           <Avatar sx={{ m: 1, bgcolor: 'secondary.main' }}>
@@ -36,7 +81,13 @@ export default function Register() {
             Register
           </Typography>
           <Box component="form" 
-          onSubmit={handleSubmit(data => agent.Account.register(data).catch(error => setValidationErrors(error.data.errors)))} noValidate sx={{ mt: 1 }}>
+          onSubmit={handleSubmit(data => agent.Account.register(data)
+          .then(() => {
+            toast.success('Registration successful-you can now log in');
+            navigate('/login');
+          }
+          )
+          .catch(error => handleApiErrors(error)))} noValidate sx={{ mt: 1 }}>
             <TextField
               margin="normal"
               fullWidth
@@ -54,7 +105,12 @@ export default function Register() {
               fullWidth
               label="Email"
               //replaces  onChange={handleInputChange}
-              {...register('email', {required:'Email is required'})}
+              {...register('email', 
+              {required:'Email is required', 
+              pattern: {
+                value: /^\w+[\w-\.]*\@\w+((-\w+)|(\w*))\.[a-z]{2,3}$/,
+                message: 'Not a valid email address'
+              }})}
               //!! casts username into a boolean if it exists in error object will be true
               //will give input a red color
               error={!!errors.email}
@@ -65,7 +121,14 @@ export default function Register() {
               fullWidth
               label="Password"
               type="password"
-              {...register('password', {required:'Password is required'})}
+              {...register('password', 
+              {
+                required:'Password is required',
+                pattern: {
+                  value: /(?=^.{6,10}$)(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[!@#$%^&amp;*()_+}{&quot;:;'?/&gt;.&lt;,])(?!.*\s).*$/,
+                  message: 'password does not meet complexity requirements'
+                }
+              })}
               error={!!errors.password}
               helperText={errors?.password?.message as string}
               
@@ -83,7 +146,7 @@ export default function Register() {
             <Grid container>
               <Grid item>
                 <Link to='/login'>
-                  {"Alrwady have an account? Sign In"}
+                  {"Already have an account? Sign In"}
                 </Link>
               </Grid>
             </Grid>
