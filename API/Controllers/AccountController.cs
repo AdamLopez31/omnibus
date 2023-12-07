@@ -76,5 +76,19 @@ namespace API.Controllers
             };
 
         }
+
+        private async Task<Basket> RetrieveBasket(string buyerId)
+        {
+            if(string.IsNullOrEmpty(buyerId)) {
+                Response.Cookies.Delete("buyerId");
+                return null;
+            }
+            var basket = await _context.Baskets 
+            //IF WE DO HAVE A BUYER ID EITHER USERNAME OR COOKIE RETURN MATCHING BASKET
+             .Include(i => i.Items)
+            .ThenInclude(p => p.Product)
+            .FirstOrDefaultAsync(x => x.BuyerId == buyerId);
+            return basket;
+        }
     }
 }

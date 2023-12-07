@@ -30,7 +30,7 @@ namespace API.Controllers
             //BACK AS A COOKIE COOKIES STORE IN USER'S BROWSER IN STORAGE
             //FOR EVERY REQUEST AND RESPONSE WE USE THE COOKIE AND IT GOES BACKWARDS
             //AND FORWARDS BETWEEN CLIENT AND SERVER
-            var basket = await RetrieveBasket();
+            var basket = await RetrieveBasket(GetBuyerId());
 
             if (basket == null) return NotFound();
             return MapBasketToDto(basket);
@@ -47,7 +47,7 @@ namespace API.Controllers
             //RetrieveBasket method will either retrieve us a basket or it's going to 
             //be null if FirstOrDefaultAsync method doesn't find what's it's looking for 
             //in database it will return default value for an object: which is null
-            var basket = await RetrieveBasket();
+            var basket = await RetrieveBasket(GetBuyerId());
             if(basket == null) basket = CreateBasket();
     
             //get product
@@ -75,7 +75,7 @@ namespace API.Controllers
         public async Task<ActionResult> RemoveBasketItem(int productId, int quantity) {
 
             //get basket
-            var basket = await RetrieveBasket();
+            var basket = await RetrieveBasket(GetBuyerId());
             if(basket == null) return NotFound();
 
             //remove item or reduce quantity
@@ -89,29 +89,50 @@ namespace API.Controllers
 
         }
 
-        private async Task<Basket> RetrieveBasket()
+        private async Task<Basket> RetrieveBasket(string buyerId)
         {
+            if(string.IsNullOrEmpty(buyerId)) {
+                Response.Cookies.Delete("buyerId");
+                return null;
+            }
             var basket = await _context.Baskets
             //EXPLICITLY RETURN BASKET ITEMS ENTITY FRAMEWORK WILL INCLUDE RELATED ITEMS WITH BASKET
-            .Include(i => i.Items)
+            // .Include(i => i.Items)
+            // .ThenInclude(p => p.Product)
+            // .FirstOrDefaultAsync(x => x.BuyerId == Request.Cookies["buyerId"]);4
+            //IF WE DO HAVE A BUYER ID EITHER USERNAME OR COOKIE RETURN MATCHING BASKET
+             .Include(i => i.Items)
             .ThenInclude(p => p.Product)
-            .FirstOrDefaultAsync(x => x.BuyerId == Request.Cookies["buyerId"]);
+            .FirstOrDefaultAsync(x => x.BuyerId == buyerId);
             return basket;
+        }
+
+        
+        private string GetBuyerId() {
+            // ?? NULL CONDITONAL OPERATOR IF User.Identity.Name IS NULL 
+            //EXECUTE WHATEVER IS TO THE RIGHT OF ??
+            return User.Identity?.Name ?? Request.Cookies["buyerId"];
         }
 
         private Basket CreateBasket()
         {
             //add buyer ID randomly generated number globally unique identifier
-            var buyerId = Guid.NewGuid().ToString();
-            
-            //EUROPEAN POLICY ON COOKIES FORCE USERS TO ACCEPT COOKIES ON WEBSITE 
-            //SPECIFY COOKIE IS ESSENTIAL TO OPERATION OF WEBSITE
-            var cookieOptions = new CookieOptions {
-                IsEssential = true,
-                Expires = DateTime.Now.AddDays(30)
+            //var buyerId = Guid.NewGuid().ToString();
+            //if user is logged in and creates a basket use User.Identity?.Name;
+            var buyerId = User.Identity?.Name;
+            if(string.IsNullOrEmpty(buyerId)) {
+                buyerId = Guid.NewGuid().ToString();
+                //EUROPEAN POLICY ON COOKIES FORCE USERS TO ACCEPT COOKIES ON WEBSITE 
+                //SPECIFY COOKIE IS ESSENTIAL TO OPERATION OF WEBSITE
+                var cookieOptions = new CookieOptions {
+                    IsEssential = true,
+                    Expires = DateTime.Now.AddDays(30)
             };
             //BECAUSE WE'RE IN A CONTROLLER WE HAVE ACCESS TO THE HTTP RESPONSE WE'RE GOING TO SEND BACK
             Response.Cookies.Append("buyerId",buyerId, cookieOptions);
+            }
+            
+            
 
             var basket = new Basket{BuyerId = buyerId};
             //ENTITY FRAMEWORK WILL START TRACKING THIS NEW ENTITY WE'VE CREATED
