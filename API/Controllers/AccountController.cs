@@ -2,12 +2,15 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using API.Data;
 using API.DTOs;
 using API.Entities;
+using API.Extensions;
 using API.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 
 namespace API.Controllers
 {
@@ -17,11 +20,14 @@ namespace API.Controllers
         private readonly UserManager<User> _userManager;
 
         private readonly TokenService _tokenService;
-        public AccountController(UserManager<User> userManager, TokenService tokenService)
+
+        private readonly StoreContext _context;
+        public AccountController(UserManager<User> userManager, TokenService tokenService, StoreContext context)
         {
             //allow us to login and register users into our application
             _userManager = userManager;
             _tokenService = tokenService;
+            _context = context;
         }
 
         [HttpPost("login")]
@@ -30,10 +36,30 @@ namespace API.Controllers
             if(user == null || !await _userManager.CheckPasswordAsync(user, loginDto.Password)) 
             return Unauthorized();
 
+            var userBasket = await RetrieveBasket(loginDto.Username);
+
+            var anonBasket = await RetrieveBasket(Request.Cookies["buyerId"]);
+
+            //CHECK TO SEE IF WE HAVE ANONYMOUS BASKET IF WE DO AND WE'RE LOGGING IN
+            //WE NEED TO TRANSFER THIS ANONYMOUS BASKET TO OUR USER AND REMOVE ANONYMOUS BASKET
+
+            if (anonBasket != null)
+            {
+                //IF THEY ALREADY HAVE A USER BASKET ON THE SERVER AND THEY HAVE AN ANONYMOUS BASKET
+                //WE'RE GOING TO DELETE THE USER BASKET THE AND CHANGE THE NAME OF THE BUYERID IN THE ANONYMOUS BASKET
+                //TO THE USERNAME anonBasket != null so we want to transfer that to user 
+                if(userBasket != null) _context.Baskets.Remove(userBasket);
+                anonBasket.BuyerId = user.UserName;
+                Response.Cookies.Delete("buyerId");//REMOVE FROM CLIENT'S BROWSER
+                await _context.SaveChangesAsync();
+            }
+
             return new UserDto
             {
                 Email = user.Email,
-                Token = await _tokenService.GenerateToken(user)
+                Token = await _tokenService.GenerateToken(user),
+                //RETURN BASKET TO USER
+                Basket = anonBasket != null ? anonBasket.MapBasketToDto() : userBasket.MapBasketToDto()
             };
         }
 
@@ -77,17 +103,17 @@ namespace API.Controllers
 
         }
 
-        // private async Task<Basket> RetrieveBasket(string buyerId)
-        // {
-        //     if(string.IsNullOrEmpty(buyerId)) {
-        //         Response.Cookies.Delete("buyerId");
-        //         return null;
-        //     }
-        //     var basket = await _context.Baskets 
-        //      .Include(i => i.Items)
-        //     .ThenInclude(p => p.Product)
-        //     .FirstOrDefaultAsync(x => x.BuyerId == buyerId);
-        //     return basket;
-        // }
+        private async Task<Basket> RetrieveBasket(string buyerId)
+        {
+            if(string.IsNullOrEmpty(buyerId)) {
+                Response.Cookies.Delete("buyerId");
+                return null;
+            }
+            var basket = await _context.Baskets 
+            .Include(i => i.Items)
+            .ThenInclude(p => p.Product)
+            .FirstOrDefaultAsync(x => x.BuyerId == buyerId);
+            return basket;
+        }
     }
 }
