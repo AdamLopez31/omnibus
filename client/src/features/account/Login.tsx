@@ -21,9 +21,14 @@ export default function Login() {
   });
 
   //FieldValues what we get back from react hook form
-  async function submitForm(data: FieldValues) {
-    await dispatch(signInUser(data));
-    navigate('/catalog');
+  async function submitForm(data:FieldValues) {
+    try {
+      await dispatch(signInUser(data));
+      navigate('/catalog');
+    } catch (error) {
+      console.log(error);
+    }
+    
   }
   
  
