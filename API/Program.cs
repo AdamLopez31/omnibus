@@ -58,7 +58,7 @@ builder.Services.AddIdentityCore<User>(opt => {
     //prevent duplicate emails in database
     opt.User.RequireUniqueEmail = true;
 })
-.AddRoles<IdentityRole>()
+.AddRoles<Role>()
 .AddEntityFrameworkStores<StoreContext>();//GIVES US TABLES FOR USERS AND ROLES
 
 //SERVICES FOR AUTHENTICATION AND AUTHORIZATION
