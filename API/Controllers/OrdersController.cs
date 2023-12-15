@@ -72,14 +72,15 @@ namespace API.Controllers
                 productItem.QuantityInStock -= item.Quantity;
             } 
 
-            var subTotal = items.Sum(item => item.Price * item.Quantity);
-            var deliveryFee = subTotal > 10000 ? 0 : 500; 
+            var subtotal = items.Sum(item => item.Price * item.Quantity);
+            var deliveryFee = subtotal > 10000 ? 0 : 500; 
 
             var order = new Order
             {
                 OrderItems = items,
                 BuyerId = User.Identity.Name,
                 ShippingAddress = orderDto.ShippingAddress,
+                Subtotal = subtotal,
                 DeliveryFee = deliveryFee
             };
 
