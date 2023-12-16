@@ -26,19 +26,20 @@ namespace API.Controllers
         }
 
         [HttpGet]
-        public async Task<ActionResult<List<Order>>> GetOrders() {
+        public async Task<ActionResult<List<OrderDto>>> GetOrders() {
             //return orders with orderItems
             return await _context.Orders
-            .Include(o => o.OrderItems)
+            //Include(o => o.OrderItems) EAGERLY LOAD
+            .ProjectOrderToOrderDto()
             .Where(x => x.BuyerId == User.Identity.Name)
             .ToListAsync();
         }
 
         //ID OF ORDER GetOrder name of route
         [HttpGet("{id}", Name = "GetOrder")]
-        public async Task<ActionResult<Order>> GetOrder(int id) {
+        public async Task<ActionResult<OrderDto>> GetOrder(int id) {
             return await _context.Orders
-            .Include(o => o.OrderItems)
+            .ProjectOrderToOrderDto()
             .Where(x => x.BuyerId == User.Identity.Name && x.Id == id)
             .FirstOrDefaultAsync();
         }
