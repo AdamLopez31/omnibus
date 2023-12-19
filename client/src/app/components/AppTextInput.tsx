@@ -11,9 +11,6 @@ export default function AppTextInput(props: Props) {
         <TextField {...props} {...field} fullWidth variant="outlined" error={!!fieldState.error} helperText={fieldState.error?.message}>
             {/* !!fieldState.error !! casting to boolean */}
             {/* field onChange event name of text field onBlur event and its value */}
-            
-            
-            
         </TextField>
     )
 }
