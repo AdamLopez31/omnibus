@@ -110,7 +110,8 @@ const Account = {
     login: (values:any) => requests.post('account/login', values),
     register: (values:any) => requests.post('account/register', values),
     //no paramters will send token to get user back
-    currentUser: () => requests.get('account/currentUser') 
+    currentUser: () => requests.get('account/currentUser'),
+    fetchAddress: () => requests.get('account/savedAddress')
 }
 
 const Orders = {

@@ -10,7 +10,7 @@ export const validationSchema = [
         address2: yup.string().required(),
         city: yup.string().required(),
         state: yup.string().required(),
-        zipcode: yup.string().required(),
+        zip: yup.string().required(),
         country: yup.string().required()
     }),
     //review component not validating anything
