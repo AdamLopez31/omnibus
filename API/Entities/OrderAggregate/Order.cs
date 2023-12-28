@@ -33,5 +33,7 @@ namespace API.Entities.OrderAggregate
         public long GetTotal() {
             return Subtotal + DeliveryFee;
         }
+
+        public string PaymentIntentId { get; set; }
     }
 }

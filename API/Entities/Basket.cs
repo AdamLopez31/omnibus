@@ -18,6 +18,11 @@ namespace API.Entities
         //ONE TO MAY RELATIONSHIP ONE BASKET HAS MANY ITEMS
         public List<BasketItem> Items { get; set; } = new List<BasketItem>();
 
+        public string PaymentIntentId { get; set; }
+
+        //CLIENT CAN MAKE PAYMENT TO STRIPE DIRECTLY WITHOUT HAVING TO GO THROUGH OUR API
+        public string ClientSecret { get; set; }
+
         public void AddItem(Product product, int quantity) {
             //.ALL() IF WE HAVE ITEMS IN OUR BASKET IT WILL RETURN TRUE 
             if(Items.All(item => item.ProductId != product.Id)) {

@@ -82,6 +82,8 @@ builder.Services.AddAuthorization();
 //ONCE FINISHED TOKEN SERVICE WILL BE DISPOSED OF NOW ABLE TO INJENCT INTO OTHER CLASSES
 builder.Services.AddScoped<TokenService>();
 
+builder.Services.AddScoped<PaymentService>();
+
 
 var app = builder.Build();
 
