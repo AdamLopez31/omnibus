@@ -14,6 +14,7 @@ import Register from "../../features/account/Register";
 import Login from "../../features/account/Login";
 import RequireAuth from "./RequireAuth";
 import Orders from "../../features/orders/Orders";
+import CheckoutWrapper from "../../features/checkout/CheckoutWrapper";
 
 export const router = createBrowserRouter([
     {
@@ -23,7 +24,7 @@ export const router = createBrowserRouter([
             //"protected routes" <RequireAuth></RequireAuth> when we load checkout component we load require auth if we pass
             //we're sent to checkout page
             {element: <RequireAuth></RequireAuth>, children: [
-                {path: 'checkout', element: <CheckoutPage></CheckoutPage>},
+                {path: 'checkout', element: <CheckoutWrapper></CheckoutWrapper>},
                 {path: 'orders', element: <Orders></Orders>},
             ]},
             {path: '', element: <HomePage></HomePage>},
