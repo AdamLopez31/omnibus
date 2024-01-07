@@ -4,11 +4,13 @@ using System.Linq;
 using System.Threading.Tasks;
 using API.Data;
 using API.DTOs;
+using API.Entities.OrderAggregate;
 using API.Extensions;
 using API.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Stripe;
 
 namespace API.Controllers
 {
@@ -18,11 +20,14 @@ namespace API.Controllers
 
         private readonly StoreContext _context;
 
+        private readonly IConfiguration _config;
 
-        public PaymentsController(PaymentService paymentService, StoreContext context)
+
+        public PaymentsController(PaymentService paymentService, StoreContext context, IConfiguration config)
         {
             _context = context;
             _paymentService = paymentService;
+            _config = config;
             
         }
 
@@ -49,6 +54,28 @@ namespace API.Controllers
             if(!result) return BadRequest(new ProblemDetails { Title = "Problem updating basket with intnent"});
 
             return basket.MapBasketToDto();
+        }
+
+
+        [HttpPost("webhook")]
+        public async Task<ActionResult> StripeWebHook() {
+            var json = await new StreamReader(HttpContext.Request.Body).ReadToEndAsync();
+
+            //EVENT UTILITY COMES FROM STRIPE ["Stripe-Signature"] HEADER STRIPE SENDS US
+            var stripeEvent = EventUtility.ConstructEvent(json, Request.Headers["Stripe-Signature"],_config["StripeSettings:WhSecret"]);
+            //CHARGE OBJECT FROM STRIPE (Charge)CASTING
+            var charge = (Charge)stripeEvent.Data.Object;
+            var order = await _context.Orders.FirstOrDefaultAsync(x => x.PaymentIntentId == charge.PaymentIntentId);
+
+            if(charge.Status == "succeeded") order.OrderStatus = OrderStatus.PaymentReceived;
+
+            await _context.SaveChangesAsync();
+
+            //STRIPE NEEDS TO KNOW IF STRIPE HAS SUCCESSFULLY RECEIVED REQUEST TO OUR WEB HOOK ENDPOINT
+            //STRIPE WILL KEEP TRYING IF WE DONT SEND BACK EMPTY RESULT
+
+            return new EmptyResult();
+
         }
     }
 }
