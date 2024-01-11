@@ -1,8 +1,11 @@
 using System.Text.Json;
 using API.Data;
+using API.DTOs;
 using API.Entities;
 using API.Extensions;
 using API.RequestHelpers;
+using AutoMapper;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -12,10 +15,15 @@ namespace API.Controllers
     public class ProductsController : BaseApiController
     {
         //IN ORDER TO USE DEPEDENCY INJECTION CREATE PRIVATE FIELD IN CLASS
+        //AUTOMAPPER INTERFACE IMAPPER
         private readonly StoreContext _context;
-        public ProductsController(StoreContext context)
+
+        private readonly IMapper _mapper;
+        public ProductsController(StoreContext context,IMapper mapper)
         {
+            _mapper = mapper;
             _context = context;
+            
         }
 
         //END POINT RETURN TASK FOR ASYNCHRONOUS QUERYING
@@ -49,7 +57,7 @@ namespace API.Controllers
         //FOR DEBUGGING EXAMPLE
         //EXECUTE THIS METHOD WHEN CODE IS ALREADY RUNNING launch.json .net core attach
         // ATTACH TO ALREADY RUNNING PROCESS .NET Core Launch (web) looK FOR API.exe
-        [HttpGet("{id}")] //api/products/3
+        [HttpGet("{id}", Name = "GetProduct")] //api/products/3
         public async Task<ActionResult<Product>> GetProduct(int id) {
             var product = await _context.Products.FindAsync(id);
             //to ensure 404 error not 204 no content error check to see if product is not null
@@ -71,6 +79,25 @@ namespace API.Controllers
 
             //ANONYMOUS OBJECT WITH TWO LISTS
             return Ok(new {brands,types});  
+        }
+
+
+        //ONLY ADMINS HTTP POST NEW RESOURCE ON SERVER
+        [Authorize(Roles = "Admin")]
+        [HttpPost]
+        public async Task<ActionResult<Product>> CreateProduct(CreateProductDto productDto) {
+
+            var product = _mapper.Map<Product>(productDto);
+            _context.Products.Add(product);
+
+            var result = await _context.SaveChangesAsync() > 0;
+
+            //CREATED AT ROUTE CREATING NEW RESOURCE ON THE SERVER 
+            //CreatedAtRoute() parameters//route name/route value/object value:Product
+            if(result) return CreatedAtRoute("GetProduct", new {Id = product.Id}, product);
+
+            return BadRequest(new ProblemDetails{Title = "Problem creating new product"});
+
         }
     }
 }
