@@ -6,6 +6,7 @@ using API.Extensions;
 using API.RequestHelpers;
 using AutoMapper;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -99,5 +100,29 @@ namespace API.Controllers
             return BadRequest(new ProblemDetails{Title = "Problem creating new product"});
 
         }
+
+
+        [Authorize(Roles = "Admin")]
+        [HttpPut]
+         public async Task<ActionResult> UpdateProduct(UpdateProductDto productDto) {
+
+            //EDITING RESOURCE 1ST GET RESOURCE WE WANT TO EDIT
+
+            var product = await _context.Products.FindAsync(productDto.Id);
+
+            if(product == null) return NotFound();
+
+             //WHERE ARE WE GOING TO GO FROM - WHERE ARE WE GOING TO GO TO
+             _mapper.Map(productDto, product);
+
+             //WHAT WE NEED TO DO WHEN WE'RE UPDATING AN ENTITY
+             var result = await _context.SaveChangesAsync() > 0;
+             //204 resource has been updated on database
+             if(result) return NoContent();
+
+             return BadRequest(new ProblemDetails { Title = "Problem updating product"});
+
+        }
+
     }
 }

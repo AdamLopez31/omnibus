@@ -15,6 +15,8 @@ namespace API.RequestHelpers
         {
             //WHERE ARE WE GOING TO GO FROM - WHERE ARE WE GOING TO GO TO
             CreateMap<CreateProductDto, Product>();
+
+            CreateMap<UpdateProductDto, Product>();
   
         }
     }   
