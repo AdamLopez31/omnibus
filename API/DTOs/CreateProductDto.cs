@@ -20,7 +20,8 @@ namespace API.DTOs
         [Range(100, double.PositiveInfinity)]
         public long Price { get; set; } //10000
 
-        public IFormFile PictureUrl { get; set; }
+        [Required]
+        public IFormFile File { get; set; }
 
 
         [Required]

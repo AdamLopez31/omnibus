@@ -4,6 +4,7 @@ using API.DTOs;
 using API.Entities;
 using API.Extensions;
 using API.RequestHelpers;
+using API.Services;
 using AutoMapper;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http.HttpResults;
@@ -20,8 +21,11 @@ namespace API.Controllers
         private readonly StoreContext _context;
 
         private readonly IMapper _mapper;
-        public ProductsController(StoreContext context,IMapper mapper)
+
+        private readonly ImageService _imageService;
+        public ProductsController(StoreContext context,IMapper mapper, ImageService imageService)
         {
+            _imageService = imageService;
             _mapper = mapper;
             _context = context;
             
@@ -84,11 +88,23 @@ namespace API.Controllers
 
 
         //ONLY ADMINS HTTP POST NEW RESOURCE ON SERVER
+        //[FromForm] means we'll get image from form not body of request where to look for product dto
+        //MULTIPART/FORM DATA TYPE OF REQUEST
         [Authorize(Roles = "Admin")]
         [HttpPost]
-        public async Task<ActionResult<Product>> CreateProduct(CreateProductDto productDto) {
+        public async Task<ActionResult<Product>> CreateProduct([FromForm]CreateProductDto productDto) {
 
             var product = _mapper.Map<Product>(productDto);
+
+            if(productDto.File != null) {
+                var imageResult = await _imageService.AddImageAsync(productDto.File);
+
+                if(imageResult.Error != null) return BadRequest(new ProblemDetails {Title = imageResult.Error.Message});
+
+                product.PictureUrl = imageResult.SecureUrl.ToString();
+
+                product.PublicId = imageResult.PublicId;
+            }
             _context.Products.Add(product);
 
             var result = await _context.SaveChangesAsync() > 0;
