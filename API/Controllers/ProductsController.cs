@@ -120,7 +120,7 @@ namespace API.Controllers
 
         [Authorize(Roles = "Admin")]
         [HttpPut]
-         public async Task<ActionResult> UpdateProduct(UpdateProductDto productDto) {
+         public async Task<ActionResult<Product>> UpdateProduct([FromForm]UpdateProductDto productDto) {
 
             //EDITING RESOURCE 1ST GET RESOURCE WE WANT TO EDIT
 
@@ -131,10 +131,27 @@ namespace API.Controllers
              //WHERE ARE WE GOING TO GO FROM - WHERE ARE WE GOING TO GO TO
              _mapper.Map(productDto, product);
 
+             
+            if(productDto.File != null) {
+                var imageResult = await _imageService.AddImageAsync(productDto.File);
+
+                if(imageResult.Error != null) return BadRequest(new ProblemDetails {Title = imageResult.Error.Message});
+
+                //KNOW IMAGE IS IN CLOUDINARY IF PUBLIC ID IS NOT NULL OR EMPTY
+                if(!string.IsNullOrEmpty(product.PublicId)) await _imageService.DeleteImageAsync(product.PublicId);
+
+                product.PictureUrl = imageResult.SecureUrl.ToString();
+
+                product.PublicId = imageResult.PublicId;
+               
+            }
+
+
+
              //WHAT WE NEED TO DO WHEN WE'RE UPDATING AN ENTITY
              var result = await _context.SaveChangesAsync() > 0;
              //204 resource has been updated on database
-             if(result) return NoContent();
+             if(result) return Ok(product);
 
              return BadRequest(new ProblemDetails { Title = "Problem updating product"});
         }
@@ -146,6 +163,8 @@ namespace API.Controllers
              var product = await _context.Products.FindAsync(id);
 
              if(product == null) return NotFound();
+
+             if(!string.IsNullOrEmpty(product.PublicId)) await _imageService.DeleteImageAsync(product.PublicId);
 
              _context.Products.Remove(product);
 
