@@ -13,10 +13,12 @@ interface Props {
 }
 
 export default function ProductForm({ product, cancelEdit }: Props) {
-    //RESET FUNCTION IS FROM useForm
-    const { control, reset, handleSubmit } = useForm();
+    //RESET FUNCTION IS FROM useForm watch: watch a particular field in our form
+    const { control, reset, handleSubmit, watch } = useForm();
 
     const { brands, types } = useProducts();
+
+    const watchFile = watch('file', null);
 
     useEffect(() => {
         //IF WE HAVE PRODUCT RESET TO WHATEVER THE PRODUCT IS
@@ -53,7 +55,15 @@ export default function ProductForm({ product, cancelEdit }: Props) {
                         <AppTextInput multiline={true} rows={4} control={control} name='description' label='Description' />
                     </Grid>
                     <Grid item xs={12}>
-                        <AppDropzone control={control} name='file' />
+                        <Box display='flex' justifyContent='space-between' alignItems='center'>
+                            <AppDropzone control={control} name='file' />
+                            {/* IF WATCH FILE IS NOT EQUAL TO NULL SHOW IMAGE PREVIEW */}
+                            {watchFile ? (
+                                <img src={watchFile.preview} alt="preview" style={{maxHeight:200}}/>
+                            ): (
+                                <img src={product?.pictureUrl} alt={product?.name} style={{maxHeight:200}}/>
+                            )}
+                        </Box>
                     </Grid>
                 </Grid>
                 <Box display='flex' justifyContent='space-between' sx={{ mt: 3 }}>
