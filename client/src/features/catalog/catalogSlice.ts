@@ -129,6 +129,16 @@ export const catalogSlice = createSlice({
         setProduct: (state, action) => {
             //either inserts a new product or updates an existing product
             productsAdapter.upsertOne(state,action.payload);
+            //IN USEPRODUCTS HOOK WILL TRIGGER USEEFFECT AND GO AND FETCH THE LATEST BATCH OF PRODUCTS
+            state.productsLoaded = false;
+
+            
+        },
+        removeProduct: (state, action) => {
+            //WILL CONTAIN OUR ID
+            productsAdapter.removeOne(state, action.payload);
+            state.productsLoaded = false;
+
         }
     },
     //EXTRA REDUCERS SO WE CAN DO SOMETHING WITH THE PRODUCTS WHEN WE GET THEM BACK
@@ -180,4 +190,4 @@ export const catalogSlice = createSlice({
 
 export const productSelectors = productsAdapter.getSelectors((state: RootState) => state.catalog);
 
-export const {setProductParams,resetProductParams, setMetaData,setPageNumber,setProduct} = catalogSlice.actions;  
+export const {setProductParams,resetProductParams, setMetaData,setPageNumber,setProduct,removeProduct} = catalogSlice.actions;  
