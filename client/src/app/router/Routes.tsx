@@ -23,10 +23,14 @@ export const router = createBrowserRouter([
         element: <App></App>,
         children: [
             //"protected routes" <RequireAuth></RequireAuth> when we load checkout component we load require auth if we pass
-            //we're sent to checkout page
+            //we're sent to checkout page 
+            //AUTHENTICATED ROUTES
             {element: <RequireAuth></RequireAuth>, children: [
                 {path: 'checkout', element: <CheckoutWrapper></CheckoutWrapper>},
                 {path: 'orders', element: <Orders></Orders>},
+            ]},
+            //ADMIN ROUTES
+            {element: <RequireAuth roles={['Admin']}></RequireAuth>, children: [
                 {path: 'inventory', element: <Inventory></Inventory>}
             ]},
             {path: '', element: <HomePage></HomePage>},
