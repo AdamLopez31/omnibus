@@ -6,6 +6,7 @@ import { router } from "../../app/router/Routes";
 import { toast } from "react-toastify";
 import { setBasket } from "../basket/basketSlice";
 
+
 interface AccountState {
     user: User | null;
 }
@@ -73,7 +74,9 @@ export const accountSlice = createSlice({
             router.navigate('/');
         },
         setUser: (state,action) => {
-            state.user = action.payload;
+            const claims = JSON.parse(atob(action.payload.token.split('.')[1]));
+            let roles = claims['http://schemas.microsoft.com/ws/2008/06/identity/claims/role']
+            state.user = {...action.payload, roles: typeof(roles) === 'string' ? [roles] : roles}
         }
     },
     //use addMatcher because our 2 createAsyncThunk are both returning user and we 
@@ -87,7 +90,12 @@ export const accountSlice = createSlice({
             router.navigate('/');
         }));
         builder.addMatcher(isAnyOf(signInUser.fulfilled, fetchCurrentUser.fulfilled), (state,action) => {
-            state.user = action.payload;
+            //atob function way to get contents of json web token into a json object
+            const claims = JSON.parse(atob(action.payload.token.split('.')[1]));
+            let roles = claims['http://schemas.microsoft.com/ws/2008/06/identity/claims/role']
+            //typeof(roles) === 'string' ? [roles] : roles set to array even if it's just a single role or leave as roles 
+            //because it is already an array
+            state.user = {...action.payload, roles: typeof(roles) === 'string' ? [roles] : roles}
         });
         builder.addMatcher(isAnyOf(signInUser.rejected, fetchCurrentUser.rejected), (_state,action) => {
             throw action.payload;
